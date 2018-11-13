@@ -48,7 +48,8 @@ public class RecycleviewAdapter extends RecyclerView.Adapter<RecycleviewAdapter.
     public void onBindViewHolder(MyViewHolder holder, int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        holder.citiname.setText(mDataset.get(position).getName());
+
+        holder.citiname.setText(mDataset.get(position).getName()+", " +mDataset.get(position).getCountry());
 
 
     }
@@ -58,4 +59,12 @@ public class RecycleviewAdapter extends RecyclerView.Adapter<RecycleviewAdapter.
     public int getItemCount() {
         return mDataset.size();
     }
+    public void replaceAll(List<Cities> cities) {
+        mDataset.clear();
+        mDataset=cities;
+        notifyDataSetChanged();
+
+
+    }
+
 }

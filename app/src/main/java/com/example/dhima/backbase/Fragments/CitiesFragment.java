@@ -7,9 +7,12 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.dhima.backbase.Adapters.RecycleviewAdapter;
@@ -33,8 +36,10 @@ import java.util.List;
 public class CitiesFragment extends Fragment {
     private static View view;
     RecyclerView citiesRecyclerview;
+    EditText searchBox;
     RecycleviewAdapter mAdapter;
-    ArrayList<Cities> ccitiesList;
+    ArrayList<Cities> AllcitiesList;
+    ArrayList<Cities>  subcities;
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,8 +49,46 @@ public class CitiesFragment extends Fragment {
     private void init() {
 
         citiesRecyclerview = view.findViewById(R.id.cities_recyclerview);
-        ccitiesList = new ArrayList<Cities>();
+        searchBox = view.findViewById(R.id.searchbox);
+        AllcitiesList = new ArrayList<Cities>();
+        subcities = new ArrayList<Cities>();
+
+        searchBox.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence query, int start, int before, int count) {
+
+                final List<Cities> filteredModelList = filter(AllcitiesList, query);
+                mAdapter.replaceAll(filteredModelList);
+                citiesRecyclerview.scrollToPosition(0);
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
     }
+
+    private List<Cities> filter(ArrayList<Cities> allcitiesList, CharSequence query) {
+
+
+        final List<Cities> filteredCitiesList = new ArrayList<>();
+        for (Cities city : allcitiesList) {
+            final String text = city.getName().toLowerCase();
+            if (text.startsWith(String.valueOf(query).toLowerCase())) {
+                filteredCitiesList.add(city);
+            }
+        }
+        return filteredCitiesList;
+
+    }
+
 
     @Nullable
     @Override
@@ -56,9 +99,10 @@ public class CitiesFragment extends Fragment {
             JSONArray obj = new JSONArray(loadJSONFromAsset(getActivity()));
             //ArrayList<Cities> cities = Cities.fromJson(obj);
             Type type = new TypeToken<List<Cities>>(){}.getType();
-            ArrayList<Cities>  cities = new Gson().fromJson(loadJSONFromAsset(getActivity()),type);
+             AllcitiesList = new Gson().fromJson(loadJSONFromAsset(getActivity()),type);
 
-            Collections.sort(cities, new Comparator<Cities>()
+
+            Collections.sort(AllcitiesList, new Comparator<Cities>()
             {
                 @Override
                 public int compare(Cities lhs, Cities rhs) {
@@ -67,7 +111,9 @@ public class CitiesFragment extends Fragment {
                 }
             });
 
+            //Toast.makeText(getActivity(), String.valueOf(AllcitiesList.size()), Toast.LENGTH_SHORT).show();
 
+            subcities  = new ArrayList<>(AllcitiesList.subList(0,200));
             citiesRecyclerview.setHasFixedSize(true);
             // use a linear layout manager
             LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
@@ -76,16 +122,17 @@ public class CitiesFragment extends Fragment {
             citiesRecyclerview.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
                 public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+
                     super.onScrolled(recyclerView, dx, dy);
                     if (!recyclerView.canScrollVertically(1))
                         onScrolledToBottom();
                 }
             });
             // Here specify the Adapter for the RecyclerView
-            mAdapter = new RecycleviewAdapter(cities);
+            mAdapter = new RecycleviewAdapter(subcities);
             citiesRecyclerview.setAdapter(mAdapter);
 
-            Toast.makeText(getActivity(), cities.get(0).getName(), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getActivity(), cities.get(0).getName(), Toast.LENGTH_SHORT).show();
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -94,8 +141,22 @@ public class CitiesFragment extends Fragment {
     }
 
     private void onScrolledToBottom() {
+        Toast.makeText(getActivity(), "bottom", Toast.LENGTH_SHORT).show();
 
-
+        if (subcities.size() < AllcitiesList.size()) {
+            int x, y;
+            if ((AllcitiesList.size() - subcities.size()) >= 200) {
+                x = subcities.size();
+                y = x + 200;
+            } else {
+                x = subcities.size();
+                y = x + AllcitiesList.size() - subcities.size();
+            }
+            for (int i = x; i < y; i++) {
+                subcities.add(AllcitiesList.get(i));
+            }
+            mAdapter.notifyDataSetChanged();
+        }
     }
 
 
