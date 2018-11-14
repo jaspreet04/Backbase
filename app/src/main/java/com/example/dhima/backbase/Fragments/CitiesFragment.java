@@ -232,7 +232,7 @@ public class CitiesFragment extends Fragment {
         @Override
         protected void onPostExecute(String json) {
             super.onPostExecute(json);
-            //Toast.makeText(getActivity(), "hi", Toast.LENGTH_SHORT).show();
+
             Type type = new TypeToken<List<Cities>>(){}.getType();
             AllcitiesList = new Gson().fromJson(json,type);
 

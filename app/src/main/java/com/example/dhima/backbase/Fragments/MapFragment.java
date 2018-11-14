@@ -42,7 +42,7 @@ public class MapFragment extends Fragment {
         lat= b.getDouble("lat");
         lng= b.getDouble("long");
         name= b.getString("name");
-        Toast.makeText(getActivity(), String.valueOf(lng), Toast.LENGTH_SHORT).show();
+
         mMapView = (MapView) view.findViewById(R.id.mapView);
         mMapView.onCreate(savedInstanceState);
 
